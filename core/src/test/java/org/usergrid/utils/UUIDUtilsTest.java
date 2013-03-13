@@ -37,6 +37,19 @@ public class UUIDUtilsTest {
   private static final Logger logger = LoggerFactory.getLogger(UUIDUtilsTest.class);
 
   @Test
+  public void concurrentUuidFrob() {
+    int count = 1000000;
+    HashSet created = new HashSet(count);
+    long tsmicros;
+    for (int x=0; x< count; x++) {
+      tsmicros = UUIDUtils.getTimestampInMicros(UUIDUtils.newTimeUUID());
+      created.add(tsmicros);
+    }
+      //assertEquals(count, created.size());
+    assertTrue(created.size() > 0);
+  }
+
+  @Test
   public void testUUIDUtils() {
     UUID uuid = UUIDUtils.newTimeUUID();
     logger.info("" + uuid);
