@@ -99,6 +99,8 @@ public abstract class AbstractSearch implements QueueSearch {
     HColumn<UUID, UUID> result = HFactory.createColumnQuery(ko, ue, ue, ue).setKey(consumerId).setName(queueId)
         .setColumnFamily(CONSUMERS.getColumnFamily()).execute().get();
     if (result != null) {
+      logger.debug("Read queue position with column timestamp '{}'", result.getClock());
+      
       return result.getValue();
     }
 
@@ -294,8 +296,8 @@ public abstract class AbstractSearch implements QueueSearch {
     Mutator<UUID> mutator = createMutator(ko, ue);
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Writing last client id pointer of '{}' for queue '{}' and consumer '{}'", new Object[] {
-          lastReturnedId, queueId, consumerId });
+      logger.debug("Writing last client id pointer of '{}' for queue '{}' and consumer '{}' with timestamp '{}", new Object[] {
+          lastReturnedId, queueId, consumerId, colTimestamp });
     }
 
     mutator.addInsertion(consumerId, CONSUMERS.getColumnFamily(),
