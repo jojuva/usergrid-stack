@@ -40,8 +40,7 @@ public class NoTransactionSearch extends AbstractSearch {
   private static final Logger logger = LoggerFactory.getLogger(NoTransactionSearch.class);
 
   protected static final int DEFAULT_READ = 1;
-  
-  
+
   /**
    * @param ko
    * @param cassTimestamp
@@ -62,7 +61,7 @@ public class NoTransactionSearch extends AbstractSearch {
     UUID queueId = getQueueId(queuePath);
     UUID consumerId = getConsumerId(queueId, query);
     QueueBounds bounds = getQueueBounds(queueId);
-    SearchParam params =  getParams(queueId, consumerId, query);
+    SearchParam params = getParams(queueId, consumerId, query);
 
     List<UUID> ids = getIds(queueId, consumerId, bounds, params);
 
@@ -70,7 +69,7 @@ public class NoTransactionSearch extends AbstractSearch {
 
     QueueResults results = createResults(messages, queuePath, queueId, consumerId);
 
-    writeClientPointer(queueId, consumerId, results.getLast());
+    writeClientPointer(queueId, consumerId, results.getLast(), params.lastRead);
 
     return results;
   }
@@ -85,13 +84,15 @@ public class NoTransactionSearch extends AbstractSearch {
    * @return
    */
   protected SearchParam getParams(UUID queueId, UUID consumerId, QueueQuery query) {
-    UUID lastReadMessageId = getConsumerQueuePosition(queueId, consumerId);
-    
-    if(logger.isDebugEnabled()){
-      logger.debug("Last message id is '{}' for queueId '{}' and clientId '{}'", new Object[]{lastReadMessageId, queueId, consumerId});
+    LastReadInfo lastReadMessageId = getConsumerQueuePosition(queueId, consumerId);
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("Last message id is '{}' for queueId '{}' and clientId '{}'", new Object[] { lastReadMessageId,
+          queueId, consumerId });
     }
 
-    return new SearchParam(lastReadMessageId, false, lastReadMessageId != null, query.getLimit(DEFAULT_READ));
+    return new SearchParam(lastReadMessageId, false, lastReadMessageId.lastReadId != null,
+        query.getLimit(DEFAULT_READ));
   }
 
   /**
@@ -113,7 +114,7 @@ public class NoTransactionSearch extends AbstractSearch {
     /**
      * The uuid to start seeking from
      */
-    protected final UUID startId;
+    protected final LastReadInfo lastRead;
 
     /**
      * true if we should seek from high to low
@@ -134,14 +135,12 @@ public class NoTransactionSearch extends AbstractSearch {
      * @param reversed
      * @param count
      */
-    public SearchParam(UUID startId, boolean reversed, boolean skipFirst, int count) {
-      this.startId = startId;
+    public SearchParam(LastReadInfo lastRead, boolean reversed, boolean skipFirst, int count) {
+      this.lastRead = lastRead;
       this.reversed = reversed;
       this.skipFirst = skipFirst;
       this.limit = count;
     }
   }
-  
-  
 
 }

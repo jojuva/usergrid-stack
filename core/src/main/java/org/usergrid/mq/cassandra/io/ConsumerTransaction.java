@@ -265,7 +265,7 @@ public class ConsumerTransaction extends NoTransactionSearch {
       // last read messages uuid, whichever is greater
       UUID lastReadId = UUIDUtils.max(lastReadTransactionPointer, lastId);
 
-      writeClientPointer(queueId, consumerId, lastReadId);
+      writeClientPointer(queueId, consumerId, lastReadId, params.lastRead);
 
     } catch (UGLockException e) {
       logger.error("Unable to acquire lock", e);
@@ -307,7 +307,7 @@ public class ConsumerTransaction extends NoTransactionSearch {
     SliceQuery<ByteBuffer, UUID, UUID> q = createSliceQuery(ko, be, ue, ue);
     q.setColumnFamily(CONSUMER_QUEUE_TIMEOUTS.getColumnFamily());
     q.setKey(getQueueClientTransactionKey(queueId, consumerId));
-    q.setRange(params.startId, startTimeUUID, false, params.limit + 1);
+    q.setRange(params.lastRead.lastReadId, startTimeUUID, false, params.limit + 1);
 
     List<HColumn<UUID, UUID>> cassResults = q.execute().get().getColumns();
 

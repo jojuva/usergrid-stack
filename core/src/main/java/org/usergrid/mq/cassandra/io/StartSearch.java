@@ -51,14 +51,14 @@ public class StartSearch extends NoTransactionSearch {
     UUID lastMessageId = query.getLastMessageId();
     
     
-    return new SearchParam(lastMessageId, false, lastMessageId != null, query.getLimit(DEFAULT_READ));
+    return new SearchParam(new LastReadInfo(lastMessageId, LastReadInfo.UNSET), false, lastMessageId != null, query.getLimit(DEFAULT_READ));
   }
 
   /* (non-Javadoc)
    * @see org.usergrid.mq.cassandra.io.FifoSearch#writeClientPointer(java.util.UUID, java.util.UUID, java.util.UUID)
    */
   @Override
-  protected void writeClientPointer(UUID queueId, UUID consumerId, UUID lastReturnedId) {
+  protected void writeClientPointer(UUID queueId, UUID consumerId, UUID lastReturnedId, LastReadInfo info) {
     //no op for searches from the start
   }
   

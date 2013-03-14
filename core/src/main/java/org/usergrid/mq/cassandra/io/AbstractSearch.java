@@ -93,18 +93,23 @@ public abstract class AbstractSearch implements QueueSearch {
    * @param consumerId
    *          The consumerId
    * 
-   * @return
+   * @return Last read info. The lastReadInfo should always be null safe
    */
-  protected UUID getConsumerQueuePosition(UUID queueId, UUID consumerId) {
+  protected LastReadInfo getConsumerQueuePosition(UUID queueId, UUID consumerId) {
     HColumn<UUID, UUID> result = HFactory.createColumnQuery(ko, ue, ue, ue).setKey(consumerId).setName(queueId)
         .setColumnFamily(CONSUMERS.getColumnFamily()).execute().get();
+
+    UUID id = null;
+    long clock = LastReadInfo.UNSET;
+
     if (result != null) {
       logger.debug("Read queue position with column timestamp '{}'", result.getClock());
-      
-      return result.getValue();
+
+      id = result.getValue();
+      clock = result.getClock();
     }
 
-    return null;
+    return new LastReadInfo(id, clock);
   }
 
   /**
@@ -176,7 +181,7 @@ public abstract class AbstractSearch implements QueueSearch {
 
     List<UUID> results = new ArrayList<UUID>(params.limit);
 
-    UUID start = params.startId;
+    UUID start = params.lastRead.lastReadId;
 
     if (start == null) {
       start = params.reversed ? bounds.getNewest() : bounds.getOldest();
@@ -225,7 +230,7 @@ public abstract class AbstractSearch implements QueueSearch {
         HColumn<UUID, ByteBuffer> column = cassResults.get(i);
 
         // skip the first one, we've already read it
-        if (i == 0 && params.skipFirst && params.startId.equals(column.getName())) {
+        if (i == 0 && params.skipFirst && params.lastRead.lastReadId.equals(column.getName())) {
           continue;
         }
 
@@ -281,7 +286,7 @@ public abstract class AbstractSearch implements QueueSearch {
    *          This is a null safe parameter. If it's null, this won't be written
    *          since it means we didn't read any messages
    */
-  protected void writeClientPointer(UUID queueId, UUID consumerId, UUID lastReturnedId) {
+  protected void writeClientPointer(UUID queueId, UUID consumerId, UUID lastReturnedId, LastReadInfo info) {
     // nothing to do
     if (lastReturnedId == null) {
       return;
@@ -293,17 +298,38 @@ public abstract class AbstractSearch implements QueueSearch {
     // conditions with clock drift.
     long colTimestamp = UUIDUtils.getTimestampInMicros(lastReturnedId);
 
+    // 2 uuids have the same micro, increment so we correctly write what we need
+    // to
+    if (colTimestamp <= info.timestamp) {
+      logger.warn("Microsecond collection on timestamp '{}' for queue '{}' and consumer '{}' detected.  Incrementing", new Object[]{colTimestamp, queueId, consumerId});
+      colTimestamp = info.timestamp+1;
+    }
+
     Mutator<UUID> mutator = createMutator(ko, ue);
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Writing last client id pointer of '{}' for queue '{}' and consumer '{}' with timestamp '{}", new Object[] {
-          lastReturnedId, queueId, consumerId, colTimestamp });
+      logger.debug("Writing last client id pointer of '{}' for queue '{}' and consumer '{}' with timestamp '{}",
+          new Object[] { lastReturnedId, queueId, consumerId, colTimestamp });
     }
 
     mutator.addInsertion(consumerId, CONSUMERS.getColumnFamily(),
         createColumn(queueId, lastReturnedId, colTimestamp, ue, ue));
 
     mutator.execute();
+  }
+
+  protected static class LastReadInfo {
+
+    // value if the timestamp is unset
+    public static final long UNSET = -1;
+
+    protected final UUID lastReadId;
+    protected final long timestamp;
+
+    protected LastReadInfo(UUID id, long timestamp) {
+      this.lastReadId = id;
+      this.timestamp = timestamp;
+    }
   }
 
   protected static final class QueueBounds {

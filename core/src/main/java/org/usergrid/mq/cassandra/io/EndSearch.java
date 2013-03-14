@@ -48,7 +48,7 @@ public class EndSearch extends NoTransactionSearch {
   @Override
   protected SearchParam getParams(UUID queueId, UUID consumerId, QueueQuery query) {
     UUID lastMessageId = query.getLastMessageId();
-    return new SearchParam(lastMessageId, true, lastMessageId != null, query.getLimit(DEFAULT_READ));
+    return new SearchParam(new LastReadInfo(lastMessageId, LastReadInfo.UNSET), true, lastMessageId != null, query.getLimit(DEFAULT_READ));
   }
 
   /*
@@ -59,7 +59,7 @@ public class EndSearch extends NoTransactionSearch {
    * java.util.UUID, java.util.UUID)
    */
   @Override
-  protected void writeClientPointer(UUID queueId, UUID consumerId, UUID lastReturnedId) {
+  protected void writeClientPointer(UUID queueId, UUID consumerId, UUID lastReturnedId, LastReadInfo info) {
     // no op for searches from the end
   }
 
