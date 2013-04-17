@@ -70,12 +70,7 @@ import org.usergrid.security.shiro.credentials.ApplicationUserAccessToken;
 import org.usergrid.security.shiro.credentials.ClientCredentials;
 import org.usergrid.security.shiro.credentials.OrganizationAccessToken;
 import org.usergrid.security.shiro.credentials.PrincipalCredentials;
-import org.usergrid.security.shiro.principals.AdminUserPrincipal;
-import org.usergrid.security.shiro.principals.ApplicationGuestPrincipal;
-import org.usergrid.security.shiro.principals.ApplicationPrincipal;
-import org.usergrid.security.shiro.principals.ApplicationUserPrincipal;
-import org.usergrid.security.shiro.principals.OrganizationPrincipal;
-import org.usergrid.security.shiro.principals.PrincipalIdentifier;
+import org.usergrid.security.shiro.principals.*;
 import org.usergrid.security.tokens.TokenInfo;
 import org.usergrid.security.tokens.TokenService;
 
@@ -85,6 +80,7 @@ public class Realm extends AuthorizingRealm {
     private static final Logger logger = LoggerFactory.getLogger(Realm.class);
 
     public final static String ROLE_SERVICE_ADMIN = "service-admin";
+    public final static String ROLE_REMOTE_SYSTEM = "remote-system";
     public final static String ROLE_ADMIN_USER = "admin-user";
     public final static String ROLE_ORGANIZATION_ADMIN = "organization-admin";
     public final static String ROLE_APPLICATION_ADMIN = "application-admin";
@@ -266,6 +262,36 @@ public class Realm extends AuthorizingRealm {
                         "applications:admin,access,get,put,post,delete:"
                                 + application.getId());
                 applicationSet.put(application.getId(), application.getName());
+            } else if ( principal instanceof RemoteSystemPrincipal ) {
+                UserInfo user = ((RemoteSystemPrincipal) principal).getUser();
+              role(info, principal, ROLE_SERVICE_ADMIN);
+              role(info, principal, ROLE_REMOTE_SYSTEM);
+              role(info, principal, ROLE_ORGANIZATION_ADMIN);
+              role(info, principal, ROLE_APPLICATION_ADMIN);
+              role(info, principal, ROLE_ADMIN_USER);
+
+              grant(info, principal, "system:access");
+
+              grant(info, principal,
+                      "organizations:admin,access,get:*");
+              grant(info, principal,
+                      "applications:admin,access,get,put,post:*");
+              grant(info, principal,
+                      "organizations:admin,access,get:*:/**");
+              grant(info, principal,
+                      "applications:admin,access,get,put,post:*:/**");
+
+              grant(info, principal, "users:access:*");
+
+              grant(info,
+                      principal,
+                      getPermissionFromPath(MANAGEMENT_APPLICATION_ID,
+                              "access"));
+
+              grant(info,
+                      principal,
+                      getPermissionFromPath(MANAGEMENT_APPLICATION_ID,
+                              "get", "/**"));
 
             } else if (principal instanceof AdminUserPrincipal) {
                 // AdminUserPrincipals are through basic auth and sessions

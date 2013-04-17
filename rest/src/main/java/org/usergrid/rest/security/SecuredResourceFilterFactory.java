@@ -41,10 +41,7 @@ import org.usergrid.persistence.EntityManager;
 import org.usergrid.persistence.EntityManagerFactory;
 import org.usergrid.persistence.Identifier;
 import org.usergrid.rest.exceptions.SecurityException;
-import org.usergrid.rest.security.annotations.RequireAdminUserAccess;
-import org.usergrid.rest.security.annotations.RequireApplicationAccess;
-import org.usergrid.rest.security.annotations.RequireOrganizationAccess;
-import org.usergrid.rest.security.annotations.RequireSystemAccess;
+import org.usergrid.rest.security.annotations.*;
 import org.usergrid.rest.utils.PathingUtils;
 import org.usergrid.security.shiro.utils.SubjectUtils;
 import org.usergrid.services.ServiceManagerFactory;
@@ -118,6 +115,9 @@ public class SecuredResourceFilterFactory implements ResourceFilterFactory {
         } else if (am.isAnnotationPresent(RequireAdminUserAccess.class)) {
             return Collections
                     .<ResourceFilter> singletonList(new AdminUserFilter());
+        } else if (am.isAnnotationPresent(RequireRemoteSystemAccess.class)) {
+            return Collections.
+                    <ResourceFilter>singletonList(new RemoteSystemFilter());
         }
         return null;
     }
@@ -296,6 +296,16 @@ public class SecuredResourceFilterFactory implements ResourceFilterFactory {
             }
         }
 
+    }
+
+    public class RemoteSystemFilter extends AbstractFilter {
+
+      @Override
+      public void authorize(ContainerRequest request) {
+        logger.debug("RemoteSystemFilter.authorize");
+        // request.isUserInRole("remote_system");
+
+      }
     }
 
     public class AdminUserFilter extends AbstractFilter {

@@ -16,11 +16,7 @@
 package org.usergrid.security.shiro.utils;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.usergrid.security.shiro.Realm.ROLE_ADMIN_USER;
-import static org.usergrid.security.shiro.Realm.ROLE_APPLICATION_ADMIN;
-import static org.usergrid.security.shiro.Realm.ROLE_APPLICATION_USER;
-import static org.usergrid.security.shiro.Realm.ROLE_ORGANIZATION_ADMIN;
-import static org.usergrid.security.shiro.Realm.ROLE_SERVICE_ADMIN;
+import static org.usergrid.security.shiro.Realm.*;
 
 import java.util.Set;
 import java.util.UUID;
@@ -271,32 +267,28 @@ public class SubjectUtils {
 	}
 
 	public static boolean isServiceAdmin() {
-		Subject currentUser = getSubject();
-		if (currentUser == null) {
-			return false;
-		}
-		return currentUser.hasRole(ROLE_SERVICE_ADMIN);
+		return checkSubjectForRole(ROLE_SERVICE_ADMIN);
 	}
+
+  public static boolean isRemoteSystem() {
+    return checkSubjectForRole(ROLE_REMOTE_SYSTEM);
+  }
 
 	public static boolean isApplicationUser() {
-		Subject currentUser = getSubject();
-		if (currentUser == null) {
-			return false;
-		}
-		return currentUser.hasRole(ROLE_APPLICATION_USER);
+		return checkSubjectForRole(ROLE_APPLICATION_USER);
 	}
 
-	
 	public static boolean isAdminUser() {
 		if (isServiceAdmin()) {
 			return true;
 		}
-		Subject currentUser = getSubject();
-		if (currentUser == null) {
-			return false;
-		}
-		return currentUser.hasRole(ROLE_ADMIN_USER);
+		return checkSubjectForRole(ROLE_ADMIN_USER);
 	}
+
+  private static boolean checkSubjectForRole(String role) {
+     Subject currentUser = getSubject();
+     return currentUser == null ? false : currentUser.hasRole(role);
+   }
 
 	public static UserInfo getUser() {
 		Subject currentUser = getSubject();
@@ -309,7 +301,7 @@ public class SubjectUtils {
 		UserPrincipal principal = (UserPrincipal) currentUser.getPrincipal();
 		return principal.getUser();
 	}
-	
+
 	public static UserInfo getAdminUser() {
 	    UserInfo user = getUser();
 	    if (user == null) {
