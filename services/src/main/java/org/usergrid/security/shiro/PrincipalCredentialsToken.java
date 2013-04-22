@@ -18,19 +18,8 @@ package org.usergrid.security.shiro;
 import org.usergrid.management.ApplicationInfo;
 import org.usergrid.management.OrganizationInfo;
 import org.usergrid.management.UserInfo;
-import org.usergrid.security.shiro.credentials.AdminUserAccessToken;
-import org.usergrid.security.shiro.credentials.AdminUserPassword;
-import org.usergrid.security.shiro.credentials.ApplicationAccessToken;
-import org.usergrid.security.shiro.credentials.ApplicationGuest;
-import org.usergrid.security.shiro.credentials.ApplicationUserAccessToken;
-import org.usergrid.security.shiro.credentials.OrganizationAccessToken;
-import org.usergrid.security.shiro.credentials.PrincipalCredentials;
-import org.usergrid.security.shiro.principals.AdminUserPrincipal;
-import org.usergrid.security.shiro.principals.ApplicationGuestPrincipal;
-import org.usergrid.security.shiro.principals.ApplicationPrincipal;
-import org.usergrid.security.shiro.principals.ApplicationUserPrincipal;
-import org.usergrid.security.shiro.principals.OrganizationPrincipal;
-import org.usergrid.security.shiro.principals.PrincipalIdentifier;
+import org.usergrid.security.shiro.credentials.*;
+import org.usergrid.security.shiro.principals.*;
 
 public class PrincipalCredentialsToken implements
 		org.apache.shiro.authc.AuthenticationToken {
@@ -114,6 +103,16 @@ public class PrincipalCredentialsToken implements
 		}
 		return null;
 	}
+
+  public static PrincipalCredentialsToken getFromRemoteSystemUserInfoAndAccessToken(UserInfo user, String token) {
+    if ( user != null ) {
+      RemoteSystemPrincipal principal = new RemoteSystemPrincipal(user);
+      RemoteSystemAccessToken credentials = new RemoteSystemAccessToken(token);
+      principal.setAccessTokenCredentials(credentials);
+      return new PrincipalCredentialsToken(principal, credentials);
+    }
+    return null;
+  }
 
 	public static PrincipalCredentialsToken getFromAppUserInfoAndAccessToken(
 			UserInfo user, String token) {
