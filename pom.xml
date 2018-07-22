@@ -7,16 +7,16 @@
 		<bundle.symbolicName>org.usergrid</bundle.symbolicName>
 		<bundle.namespace>org.usergrid</bundle.namespace>
 		<!-- <cassandra-javautils-version>1.1.6</cassandra-javautils-version> -->
-		<cassandra-version>1.1.6</cassandra-version>
+		<cassandra-version>2.2.0</cassandra-version>
 		<hector-om-version>2.0-01</hector-om-version>
 		<hector-version>1.1-2-1</hector-version>
 		<hector-test-version>1.1-2</hector-test-version>
 		<jackson-version>1.9.9</jackson-version>
 		<jersey-version>1.17</jersey-version>
-		<shiro-version>1.2.0</shiro-version>
+		<shiro-version>1.4.0</shiro-version>
 		<junit-version>4.10</junit-version>
 		<log4j-version>1.2.16</log4j-version>
-		<org.springframework.version>3.1.2.RELEASE</org.springframework.version>
+		<org.springframework.version>3.2.9.RELEASE</org.springframework.version>
 		<slf4j-version>1.6.1</slf4j-version>
 		<snakeyaml-version>1.8</snakeyaml-version>
 		<usergrid-custom-spring-properties>classpath:/usergrid-custom.properties</usergrid-custom-spring-properties>
@@ -336,7 +336,7 @@
 			<dependency>
 				<groupId>org.apache.activemq</groupId>
 				<artifactId>activemq-spring</artifactId>
-				<version>5.5.0</version>
+				<version>5.9.1</version>
 				<optional>false</optional>
 			</dependency>
 			<dependency>
