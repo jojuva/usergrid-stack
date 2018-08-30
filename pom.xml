@@ -7,7 +7,7 @@
 		<bundle.symbolicName>org.usergrid</bundle.symbolicName>
 		<bundle.namespace>org.usergrid</bundle.namespace>
 		<!-- <cassandra-javautils-version>1.1.6</cassandra-javautils-version> -->
-		<cassandra-version>1.1.6</cassandra-version>
+		<cassandra-version>2.2.0</cassandra-version>
 		<hector-om-version>2.0-01</hector-om-version>
 		<hector-version>1.1-2-1</hector-version>
 		<hector-test-version>1.1-2</hector-test-version>
@@ -113,7 +113,7 @@
 			<dependency>
 				<groupId>commons-collections</groupId>
 				<artifactId>commons-collections</artifactId>
-				<version>3.2.1</version>
+				<version>3.2.2</version>
 				<type>jar</type>
 			</dependency>
 
